@@ -1,0 +1,98 @@
+package com.interprocesscommn;
+
+public class TomJerry {
+
+	public static void main(String[] args) {
+		Jerry jerry = new Jerry();
+		JerryGenerator jp = new JerryGenerator(jerry, 1);
+		Tom c1 = new Tom(jerry);
+		jp.start();
+		c1.start();
+		
+	}
+
+}
+
+class Tom extends Thread {
+	private Jerry j;
+
+	// private int number;
+	public Tom(Jerry c) {
+		j = c;
+
+	}
+
+	public void run() {
+		int value = 0;
+		for (int i = 0; i < 10; i++) {
+			value = j.catchJerry();
+			System.out.println("caught: " + value);
+		}
+	}
+}
+
+class Jerry {
+	int count = 0;
+	boolean available = false;
+
+	public synchronized void produceJerry(int num) {
+		available=false;
+		System.out.println("in prod");
+		while (available = true) {
+			System.out.println("in wh");
+			try {
+				wait();
+			} catch (InterruptedException ie) {
+				ie.printStackTrace();
+			}
+		}
+		count = num;
+		available = true;
+		notifyAll();
+	}
+
+	public synchronized int catchJerry() {
+		 while (available == false) 
+         {
+               try 
+               {
+                     wait();
+               }
+               catch (InterruptedException ie) 
+               {
+            	   System.out.println("excep");
+               }
+         }
+		 available=false;
+		 notifyAll();
+		 return count;
+		
+	}
+}
+
+class JerryGenerator extends Thread {
+	private Jerry jerry;
+	private int number;
+
+	public JerryGenerator(Jerry c, int number) {
+		jerry = c;
+		this.number = number;
+	}
+
+	public void run() {
+		System.out.println("in ..");
+		for (int i = 1; i <= number; i++) {
+			jerry.produceJerry(i);
+			System.out.println("Produced value " + this.number + " put: " + i);
+			try 
+            {
+                  sleep((int)(Math.random() * 100));
+            } 
+            catch (InterruptedException ie) 
+            {
+                  ie.printStackTrace();
+            }
+		}
+		System.out.println("out");
+	}
+}
