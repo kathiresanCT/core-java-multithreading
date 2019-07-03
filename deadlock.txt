@@ -1,0 +1,58 @@
+package com.deadlock;
+
+public class DeadLockExample {
+	final static Object lockObject1 = new Object();
+	final static Object lockObject2 = new Object();
+
+	public static void main(String[] args) {
+		Thread t1 = new Thread(new Runnable1());
+		t1.setName("Thread A");
+		t1.start();
+		Thread t2 = new Thread(new Runnable2());
+		t2.setName("Thread B");
+		t2.start();
+	}
+}
+
+class Runnable1 implements Runnable {
+public void run()
+{
+synchronized (DeadLockExample.lockObject1)
+ {
+ System.out.println(Thread.currentThread().getName()+": Got lockObject1. Trying forlockObject2");
+ try {
+ Thread.sleep(2000);
+ //DeadLockExample.lockObject1.wait(500);
+//DeadLockExample.lockObject1.wait();
+ } catch (InterruptedException e) {
+ e.printStackTrace();
+ }
+ synchronized (DeadLockExample.lockObject2)
+ {
+ System.out.println(Thread.currentThread().getName()+": Got lockObject2.");
+ }
+ }
+}
+}
+
+class Runnable2 implements Runnable {
+public void run()
+{
+synchronized (DeadLockExample.lockObject2)
+ {
+	System.out.println(Thread.currentThread().getName()+": Got lockObject2. Trying for lockObject1");
+			 try {
+			 Thread.sleep(2000);
+			 //DeadLockExample.lockObject2.wait(500);
+			//DeadLockExample.lockObject2.wait();
+			 } catch (InterruptedException e) {
+			 e.printStackTrace();
+			 }
+	synchronized (DeadLockExample.lockObject1)
+	 {
+	 System.out.println(Thread.currentThread().getName()+": Got lockObject1.");
+	//DeadLockExample.lockObject1.notify();
+	 }
+	 }
+	}
+}
