@@ -3,25 +3,28 @@ package com.pc;
 class Message {
 
 	String data = null;
+	boolean available = false;
 
 	synchronized void produce() {
-		while(data==null) {
-			data = "hello";	
-			notify();
-		}
-		
+		System.out.println(data);
+		while(available==true) {
 			try {
+				System.out.println("in wait");
 				wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
+			
+		}	
+		available = true;
+		notify();
 		
 	}
 
 	synchronized String consume() {
-	while(data==null) {
+		
+	while(available==false) {
 		try 
         {
               wait();
@@ -31,7 +34,8 @@ class Message {
      	   System.out.println("excep");
         }
 	}
-	notify();
+	 available=false;
+	 notify();
 	return data;
 	}
 }
@@ -40,10 +44,24 @@ class Consumer extends Thread {
 	Message message=null;
 	
 	public Consumer(Message m) {
-		System.out.println(m.consume());
+		this.message=m;
+		//System.out.println(m.consume());
 	}
 	
-	
+	@Override
+	public void run() {
+		message.consume();
+		try 
+        {
+			System.out.println("in try consume");
+              sleep(1000);
+        } 
+        catch (InterruptedException ie) 
+        {
+              ie.printStackTrace();
+        }
+		
+	}
 
 	
 }
@@ -53,10 +71,12 @@ class Producer extends Thread{
 		this.message=message;
 	}
 	public void run() {
+		System.out.println("in prod run");
 		message.produce();
 		try 
         {
-              sleep((int)(Math.random() * 100));
+			System.out.println("in try prod");
+              sleep(1000);
         } 
         catch (InterruptedException ie) 
         {
